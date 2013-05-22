@@ -42,8 +42,6 @@ function boiler (app) {
   app = app || '.'
 
   copytree(path.join(__dirname, 'boiler'), path.join(process.cwd(), app));
-
-
 }
 
 
@@ -52,16 +50,18 @@ function onBeforePushSync() {
     beforePushSyncListener.onBeforePushSync();
   }
 }
+
 function onAfterPushSync() {
   if (afterPushSyncListener && typeof afterPushSyncListener.onAfterPushSync === "function") {
     afterPushSyncListener.onAfterPushSync();
   }
 }
+
 var _isUsingDirectoryConfig;
 function isUsingDirectoryConfig() {
   if(_isUsingDirectoryConfig != null)
     return _isUsingDirectoryConfig;
-  return _isUsingDirectoryConfig = (process.argv[2].trim() === "-dc");
+  return _isUsingDirectoryConfig = (process.argv[2] && process.argv[2].trim() === "-dc");
 }
 
 if (process.mainModule && process.mainModule.filename === __filename) {
@@ -110,7 +110,7 @@ if (process.mainModule && process.mainModule.filename === __filename) {
     couch = process.argv.shift();
   }
 
-  if (command == 'help' || command == undefined) {
+  if (['push', 'sync', 'boiler', 'serve'].indexOf(command) < 0) {
     console.log(
       [ "couchapp -- utility for creating couchapps"
         , ""
@@ -121,6 +121,7 @@ if (process.mainModule && process.mainModule.filename === __filename) {
         , " couchapp -dc <command> <appconfigdirectory> http://localhost:5984/dbname"
         , ""
         , "Commands:"
+        , "  help   : Show this help message and exit."
         , "  push   : Push app once to server."
         , "  sync   : Push app then watch local files for changes."
         , "  boiler : Create a boiler project."
@@ -129,12 +130,16 @@ if (process.mainModule && process.mainModule.filename === __filename) {
         , "            -p port  : list on port portNum [default=3000]"
         , "            -d dir   : attachments directory [default='attachments']"
         , "            -l       : log rewrites to couchdb [default='false']"
-      ]
-      .join('\n')
+      ].join('\n')
     )
-    process.exit();
+
+    if (command === 'help') {
+      process.exit(0);
+    } else {
+      process.exit(1);
+    }
   }
-  
+
   if (couch == undefined) {
     try {
       couch = JSON.parse(fs.readFileSync('.couchapp.json')).couch;
@@ -176,7 +181,6 @@ if (process.mainModule && process.mainModule.filename === __filename) {
         if (command == 'push') app.push()
         else if (command == 'sync') app.sync()
         else if (command == 'serve') serve(app);
-        
       })
     }
   }
