@@ -133,11 +133,7 @@ if (process.mainModule && process.mainModule.filename === __filename) {
       ].join('\n')
     )
 
-    if (command === 'help') {
-      process.exit(0);
-    } else {
-      process.exit(1);
-    }
+    command === 'help' ? process.exit(0) : process.exit(1);
   }
 
   if (couch == undefined) {
